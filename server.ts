@@ -127,7 +127,22 @@ ${newsHeadlines}
       if (!response.ok) {
         const errorData = await response.json();
         console.error('Gemini API Error:', JSON.stringify(errorData));
-        throw new Error(`Gemini API Error: ${errorData.error?.message || response.statusText}`);
+        
+        const errorCode = errorData.error?.code;
+        const errorMessage = errorData.error?.message || response.statusText;
+        
+        let friendlyMessage = 'AI 分析服務發生未知的錯誤，請稍後再試。';
+        if (errorCode === 503) {
+          friendlyMessage = '目前 Google AI 伺服器處於高負載狀態 (503)，這通常是暫時的，請稍等幾分鐘後再試一次。';
+        } else if (errorCode === 429) {
+          friendlyMessage = '已經達到免費 API 的請求頻率上限 (429)，請稍等 30 秒後再試。';
+        } else if (errorCode === 400 && errorMessage.includes('API key not valid')) {
+          friendlyMessage = 'API Key 無效，請檢查您的金鑰設定是否正確。';
+        } else {
+          friendlyMessage = `AI 服務錯誤: ${errorMessage}`;
+        }
+        
+        return res.status(errorCode || 500).json({ error: friendlyMessage });
       }
 
       const data = await response.json();
