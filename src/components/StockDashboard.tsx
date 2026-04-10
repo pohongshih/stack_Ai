@@ -49,6 +49,7 @@ export default function StockDashboard() {
 
   const [analysis, setAnalysis] = useState<any>(null);
   const [loadingAnalysis, setLoadingAnalysis] = useState(false);
+  const [analysisError, setAnalysisError] = useState('');
 
   useEffect(() => {
     localStorage.setItem('stockWatchlist', JSON.stringify(watchlist));
@@ -100,6 +101,7 @@ export default function StockDashboard() {
     setLoadingData(true);
     setError('');
     setAnalysis(null);
+    setAnalysisError('');
     try {
       const res = await fetch(`/api/stock/${symbol}`);
       if (!res.ok) throw new Error('Failed to fetch stock data');
@@ -150,6 +152,7 @@ export default function StockDashboard() {
     if (!stockData || !selectedStock) return;
     
     setLoadingAnalysis(true);
+    setAnalysisError('');
     try {
       const res = await fetch('/api/analyze', {
         method: 'POST',
@@ -165,11 +168,11 @@ export default function StockDashboard() {
       if (data.analysis) {
         setAnalysis(data.analysis);
       } else {
-        setError('Failed to generate analysis');
+        setAnalysisError(data.error || '無法產生分析報告，請稍後再試');
       }
     } catch (err) {
       console.error('Analysis error:', err);
-      setError('Error generating analysis');
+      setAnalysisError('AI 分析時發生錯誤（可能是免費額度限制或網路問題）');
     } finally {
       setLoadingAnalysis(false);
     }
@@ -621,6 +624,16 @@ export default function StockDashboard() {
                   <div className="flex flex-col items-center justify-center py-12 text-slate-500 space-y-4">
                     <BrainCircuit className="w-8 h-8 animate-pulse" />
                     <p className="text-sm font-medium animate-pulse">AI 正在分析技術指標與新聞...</p>
+                  </div>
+                ) : analysisError ? (
+                  <div className="flex flex-col items-center justify-center py-10 text-red-500 space-y-4 bg-red-50 rounded-lg border border-red-100">
+                    <p className="text-sm font-medium">{analysisError}</p>
+                    <button 
+                      onClick={generateAnalysis}
+                      className="px-4 py-2 bg-red-100 text-red-700 rounded text-sm font-medium hover:bg-red-200 transition-colors flex items-center gap-2"
+                    >
+                      <RefreshCw className="w-4 h-4" /> 重新產生分析
+                    </button>
                   </div>
                 ) : analysis ? (
                   <div className="space-y-8">
