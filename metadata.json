@@ -1,0 +1,5 @@
+{
+  "name": "AI Stock Pro",
+  "description": "智能股票分析系統，提供即時技術分析、新聞統整與買賣策略建議。",
+  "requestFramePermissions": []
+}
