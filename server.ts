@@ -1,10 +1,19 @@
 import express from 'express';
 import { createServer as createViteServer } from 'vite';
-import YahooFinance from 'yahoo-finance2';
+import yahooFinance from 'yahoo-finance2';
 import { GoogleGenAI } from '@google/genai';
 import path from 'path';
 
-const yahooFinance = new (YahooFinance as any)();
+// Configure yahoo-finance2 to spoof User-Agent to avoid 429 errors on cloud hosts
+yahooFinance.suppressNotices(['yahooFinance.warnings.crumb']);
+yahooFinance.setGlobalConfig({
+  fetchOptions: {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
+    }
+  }
+});
+
 let aiClient: GoogleGenAI | null = null;
 
 function getAIClient(): GoogleGenAI {
