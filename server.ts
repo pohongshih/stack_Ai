@@ -57,8 +57,11 @@ async function startServer() {
 
       res.json({ quote, historical, news });
     } catch (error: any) {
-      console.error('Error fetching stock data:', error);
-      res.status(500).json({ error: error.message || 'Failed to fetch stock data' });
+      console.error('Error fetching stock data:', error.message || error);
+      res.status(500).json({ 
+        error: '無法取得股票資料', 
+        details: error.message || 'Yahoo Finance 拒絕連線 (可能是雲端主機 IP 被封鎖)' 
+      });
     }
   });
 

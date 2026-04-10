@@ -104,11 +104,15 @@ export default function StockDashboard() {
     setAnalysisError('');
     try {
       const res = await fetch(`/api/stock/${symbol}`);
-      if (!res.ok) throw new Error('Failed to fetch stock data');
       const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.details || data.error || 'Failed to fetch stock data');
+      }
+      
       setStockData(data);
     } catch (err: any) {
-      setError(err.message || 'Error fetching data');
+      setError(`資料讀取失敗: ${err.message}`);
       setStockData(null);
     } finally {
       setLoadingData(false);
