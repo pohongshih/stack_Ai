@@ -117,21 +117,32 @@ ${newsHeadlines}
       }
       key = key.trim();
 
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }]
-        })
-      });
+      let response;
+      try {
+        response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }]
+          })
+        });
+      } catch (fetchErr) {
+        console.error('Fetch to Gemini failed:', fetchErr);
+        return res.status(500).json({ error: '無法連線至 AI 伺服器，請檢查網路狀態。' });
+      }
 
       if (!response.ok) {
-        const errorData = await response.json();
+        let errorData: any = {};
+        try {
+          errorData = await response.json();
+        } catch (e) {
+          errorData = { error: { message: 'Google API 回傳了非預期的格式 (可能是 503 伺服器錯誤)' } };
+        }
         console.error('Gemini API Error:', JSON.stringify(errorData));
         
-        const errorCode = errorData.error?.code;
+        const errorCode = errorData.error?.code || response.status;
         const errorMessage = errorData.error?.message || response.statusText;
         
         let friendlyMessage = 'AI 分析服務發生未知的錯誤，請稍後再試。';

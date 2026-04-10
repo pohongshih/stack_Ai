@@ -164,15 +164,30 @@ export default function StockDashboard() {
           news: stockData.news
         })
       });
-      const data = await res.json();
+      
+      let data;
+      const contentType = res.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        data = await res.json();
+      } else {
+        const text = await res.text();
+        console.error('Received non-JSON response:', text.substring(0, 200));
+        throw new Error('伺服器回傳了無效的資料格式 (可能是伺服器過載或連線異常)');
+      }
+
+      if (!res.ok) {
+        setAnalysisError(data.error || `伺服器錯誤 (${res.status})`);
+        return;
+      }
+
       if (data.analysis) {
         setAnalysis(data.analysis);
       } else {
         setAnalysisError(data.error || '無法產生分析報告，請稍後再試');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Analysis error:', err);
-      setAnalysisError('AI 分析時發生錯誤（可能是免費額度限制或網路問題）');
+      setAnalysisError(err.message || 'AI 分析時發生錯誤（可能是免費額度限制或網路問題）');
     } finally {
       setLoadingAnalysis(false);
     }
