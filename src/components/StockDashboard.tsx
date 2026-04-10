@@ -240,18 +240,66 @@ export default function StockDashboard() {
 
     const last = (arr: any[]) => arr[arr.length - 1];
     const lastVolume = last(volumes);
+    const lastClose = last(closes);
+
+    // RSI Signal
+    let rsiSignal = { text: '中立', color: 'text-slate-500' };
+    const rsiVal = last(rsi);
+    if (rsiVal >= 70) rsiSignal = { text: '超買 (留意回檔)', color: 'text-red-500' };
+    else if (rsiVal <= 30) rsiSignal = { text: '超賣 (留意反彈)', color: 'text-emerald-500' };
+    else if (rsiVal > 50) rsiSignal = { text: '偏多', color: 'text-emerald-500' };
+    else rsiSignal = { text: '偏空', color: 'text-red-500' };
+
+    // MACD Signal
+    let macdSignal = { text: '中立', color: 'text-slate-500' };
+    const macdVal = last(macd)?.MACD;
+    const macdHist = last(macd)?.histogram;
+    if (macdVal > 0 && macdHist > 0) macdSignal = { text: '多頭強勢', color: 'text-emerald-500' };
+    else if (macdVal > 0 && macdHist < 0) macdSignal = { text: '多頭轉弱', color: 'text-amber-500' };
+    else if (macdVal < 0 && macdHist < 0) macdSignal = { text: '空頭強勢', color: 'text-red-500' };
+    else if (macdVal < 0 && macdHist > 0) macdSignal = { text: '空頭反彈', color: 'text-amber-500' };
+
+    // KD Signal
+    let kdSignal = { text: '中立', color: 'text-slate-500' };
+    const kVal = last(kd)?.k;
+    const dVal = last(kd)?.d;
+    if (kVal >= 80) kdSignal = { text: '高檔超買', color: 'text-red-500' };
+    else if (kVal <= 20) kdSignal = { text: '低檔超賣', color: 'text-emerald-500' };
+    else if (kVal > dVal) kdSignal = { text: '黃金交叉', color: 'text-emerald-500' };
+    else if (kVal < dVal) kdSignal = { text: '死亡交叉', color: 'text-red-500' };
+
+    // BB Signal
+    let bbSignal = { text: '通道內整理', color: 'text-slate-500' };
+    const bbUpper = last(bb)?.upper;
+    const bbLower = last(bb)?.lower;
+    if (lastClose >= bbUpper) bbSignal = { text: '觸及上軌 (強勢)', color: 'text-red-500' };
+    else if (lastClose <= bbLower) bbSignal = { text: '觸及下軌 (弱勢)', color: 'text-emerald-500' };
+
+    // MA Trend
+    let maSignal = { text: '震盪整理', color: 'text-slate-500' };
+    const ma5Val = last(ma5);
+    const ma20Val = last(ma20);
+    if (lastClose > ma5Val && ma5Val > ma20Val) maSignal = { text: '多頭排列', color: 'text-emerald-500' };
+    else if (lastClose < ma5Val && ma5Val < ma20Val) maSignal = { text: '空頭排列', color: 'text-red-500' };
 
     return {
-      ma5: last(ma5)?.toFixed(1),
-      ma20: last(ma20)?.toFixed(1),
+      ma5: ma5Val?.toFixed(1),
+      ma20: ma20Val?.toFixed(1),
       ma60: last(ma60)?.toFixed(1),
-      rsi: last(rsi)?.toFixed(2),
-      macd: last(macd)?.MACD?.toFixed(2),
-      kdK: last(kd)?.k?.toFixed(2),
-      kdD: last(kd)?.d?.toFixed(2),
-      bbUpper: last(bb)?.upper?.toFixed(2),
-      bbLower: last(bb)?.lower?.toFixed(2),
-      volume: lastVolume ? (lastVolume / 1000).toFixed(0) : '0' // in thousands
+      rsi: rsiVal?.toFixed(2),
+      macd: macdVal?.toFixed(2),
+      kdK: kVal?.toFixed(2),
+      kdD: dVal?.toFixed(2),
+      bbUpper: bbUpper?.toFixed(2),
+      bbLower: bbLower?.toFixed(2),
+      volume: lastVolume ? (lastVolume / 1000).toFixed(0) : '0', // in thousands
+      signals: {
+        rsi: rsiSignal,
+        macd: macdSignal,
+        kd: kdSignal,
+        bb: bbSignal,
+        ma: maSignal
+      }
     };
   }, [stockData]);
 
@@ -533,28 +581,56 @@ export default function StockDashboard() {
                 {/* Technical Indicators */}
                 <div>
                   <h3 className="text-lg font-bold text-slate-800 mb-6 border-b border-slate-200 pb-2">技術指標</h3>
-                  <div className="space-y-4 text-sm">
-                    <div className="flex justify-between">
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between items-center py-1">
+                      <span className="text-slate-600">趨勢判定 (均線)</span>
+                      <div className="flex items-center gap-2">
+                        <span className={cn("text-xs px-2 py-0.5 rounded-full bg-slate-100 font-medium", indicators?.signals?.ma?.color)}>
+                          {indicators?.signals?.ma?.text}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center py-1">
                       <span className="text-slate-600">RSI(14)</span>
-                      <span className="font-medium">{indicators?.rsi || '-'}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium font-serif">{indicators?.rsi || '-'}</span>
+                        <span className={cn("text-xs px-2 py-0.5 rounded-full bg-slate-100 font-medium", indicators?.signals?.rsi?.color)}>
+                          {indicators?.signals?.rsi?.text}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center py-1">
                       <span className="text-slate-600">MACD</span>
-                      <span className="font-medium">{indicators?.macd || '-'}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium font-serif">{indicators?.macd || '-'}</span>
+                        <span className={cn("text-xs px-2 py-0.5 rounded-full bg-slate-100 font-medium", indicators?.signals?.macd?.color)}>
+                          {indicators?.signals?.macd?.text}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-600">KD 隨機 K</span>
-                      <span className="font-medium">{indicators?.kdK || '-'} / {indicators?.kdD || '-'}</span>
+                    <div className="flex justify-between items-center py-1">
+                      <span className="text-slate-600">KD 隨機指標</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium font-serif">{indicators?.kdK || '-'} / {indicators?.kdD || '-'}</span>
+                        <span className={cn("text-xs px-2 py-0.5 rounded-full bg-slate-100 font-medium", indicators?.signals?.kd?.color)}>
+                          {indicators?.signals?.kd?.text}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center py-1">
                       <span className="text-slate-600">布林通道</span>
-                      <span className="font-medium">{indicators?.bbUpper || '-'} / {indicators?.bbLower || '-'}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium font-serif">{indicators?.bbUpper || '-'} / {indicators?.bbLower || '-'}</span>
+                        <span className={cn("text-xs px-2 py-0.5 rounded-full bg-slate-100 font-medium", indicators?.signals?.bb?.color)}>
+                          {indicators?.signals?.bb?.text}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center py-1">
                       <span className="text-slate-600">成交量</span>
-                      <span className="font-medium">{indicators?.volume ? `${indicators.volume} 張` : '-'}</span>
+                      <span className="font-medium font-serif">{indicators?.volume ? `${indicators.volume} 張` : '-'}</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center py-1">
                       <span className="text-slate-600">外資動向</span>
                       <span className="font-medium">{analysis?.foreignInvestment || '-'}</span>
                     </div>

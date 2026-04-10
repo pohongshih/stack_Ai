@@ -47,7 +47,9 @@ async function startServer() {
 
       let news = [];
       try {
-        const searchRes = await yahooFinance.search(symbol, { newsCount: 5, ...queryOptions }) as any;
+        // Remove .TW or .TWO to get more relevant local news from Yahoo
+        const cleanSymbol = symbol.replace('.TW', '').replace('.TWO', '');
+        const searchRes = await yahooFinance.search(cleanSymbol, { newsCount: 5, ...queryOptions }) as any;
         news = searchRes.news || [];
       } catch (e) {
         console.warn(`News not found for ${symbol}`);
