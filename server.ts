@@ -96,6 +96,7 @@ ${newsHeadlines}
 {
   "recommendation": "強烈買進 | 買進 | 觀望持有 | 賣出 | 強烈賣出",
   "technicalAnalysis": "技術面分析結果（包含均線、RSI、MACD等型態判斷，約 50 字）",
+  "newsSummary": "近期新聞重點整理與小結（請用 2-3 點條列式總結新聞帶來的影響）",
   "analysisSummary": "結合基本面與消息面的綜合分析段落（約 50-100 字）",
   "strategy": {
     "buyPrice": "建議買點（如 NT$1000）",

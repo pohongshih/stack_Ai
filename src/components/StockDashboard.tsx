@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Plus, Trash2, TrendingUp, TrendingDown, RefreshCw, Activity, Newspaper, BrainCircuit, LineChart as LineChartIcon } from 'lucide-react';
+import { Search, Plus, Trash2, TrendingUp, TrendingDown, RefreshCw, Activity, Newspaper, BrainCircuit, LineChart as LineChartIcon, Lightbulb } from 'lucide-react';
 import { BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { format } from 'date-fns';
 import { SMA, RSI, MACD, Stochastic, BollingerBands } from 'technicalindicators';
@@ -725,7 +725,15 @@ export default function StockDashboard() {
                     )}
                     <div>
                       <h4 className="text-sm font-bold text-slate-800 mb-2 flex items-center gap-2">
-                        <Newspaper className="w-4 h-4 text-blue-600" /> 綜合評估與消息面
+                        <Newspaper className="w-4 h-4 text-blue-600" /> 近期新聞重點整理
+                      </h4>
+                      <div className="text-slate-700 leading-relaxed text-sm whitespace-pre-line">
+                        {analysis.newsSummary || '暫無新聞重點整理'}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-800 mb-2 flex items-center gap-2">
+                        <Lightbulb className="w-4 h-4 text-blue-600" /> 綜合評估
                       </h4>
                       <p className="text-slate-700 leading-relaxed text-sm">
                         {analysis.analysisSummary}
